@@ -14,6 +14,23 @@
 </head>
 
 <body>
+
+	<h1>Minesweeper Royale</h1>
+	<div id="lobby" style="display:none;">
+		<h2>Lobby</h2>
+		<p id="count">4/10 players ready</p>
+		<input type="text" id="username" placeholder="username">
+		<input type="button" value="Ready" id="ready">
+		<p id="lerror"></p>
+	</div>
+	<div id="game">
+		<h2>Game</h2>
+		<canvas id='canvas' width=600 height=600>
+
+		</canvas>
+	</div>
+	<script src="js/EventEmitter/EventEmitter.js"></script>
+	<script src="js/socket.js"></script>
 	<script src="js/scripts.js"></script>
 </body>
 
