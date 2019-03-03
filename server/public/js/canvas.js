@@ -17,6 +17,16 @@ class GameCanvas {
 		let self = this;
 		window.addEventListener('resize', () => this.resize(self));
 		this.resize(self);
+	}
+
+	resizeBoard(x, y, w, h) {
+		this.numXTiles = w;
+		this.numYTiles = h;
+		this.tiles.forEach(tile => {
+			tile.x += x;
+			tile.y += y;
+		});
+		this.resize(self);
 		this.init();
 	}
 
@@ -50,19 +60,19 @@ class GameCanvas {
 
 				if (x >= 0 && y >= 0 && x < this.numXTiles - 1 && y < this.numYTiles - 1) {
 					let tile = this.getTile(x, y);
-					
+
 					if (!tile) {
-						tile = {type: 'U', x:x, y:y}
+						tile = { type: 'U', x: x, y: y, color: this.myColor }
 						game.canvas.tiles.push(tile);
 					}
 
 					console.log(tile.type)
 					if (tile.type == "F") {
-						this.drawTile({type: 'U', x: x, y: y});
 						tile.type = "U";
+						this.drawTile(tile);
 					} else if (tile.type == "U") {
-						this.drawTile({type: 'F', x: x, y: y});
 						tile.type = "F";
+						this.drawTile(tile);
 					}
 
 					return false;
@@ -76,7 +86,7 @@ class GameCanvas {
 		};
 		this.canvas.onmouseout = () => this.mouseDown = false;
 	}
-	die () {
+	die() {
 		this.canvas.onmousedown = undefined;
 		this.canvas.onmousemove = undefined;
 		this.canvas.onmouseup = undefined;
@@ -145,6 +155,8 @@ class GameCanvas {
 			}
 		}
 
+		this.tiles.forEach(t => this.drawTile(t));
+
 		// Header
 		this.drawRect(16, 16, this.canvas.width - 32, 72, true);
 		this.drawSevenSegment(0, 32, 28);
@@ -154,7 +166,7 @@ class GameCanvas {
 		if (this.lastClickingTile) {
 			this.drawTile(this.lastClickingTile);
 		}
-		if (this.clickingTile && this.mouseDown) {
+		if (this.clickingTile && this.mouseDown && !this.getTile(this.clickingTile.x, this.clickingTile.y)) {
 			this.drawTile(this.clickingTile);
 		}
 	}
@@ -162,26 +174,44 @@ class GameCanvas {
 		return this.tiles.find(t => t.x === x && t.y === y);
 	}
 	drawTile(tile) {
+		let x = this.gamePanelLeft + tile.x * this.tileSize,
+			y = this.gamePanelTop + tile.y * this.tileSize;
 		this.ctx.drawImage($('tile' + tile.type),
-			this.gamePanelLeft + tile.x * this.tileSize,
-			this.gamePanelTop + tile.y * this.tileSize,
+			x, y,
 			this.tileSize, this.tileSize);
-
 		if (tile.color) {
-			this.ctx.globalAlpha = 0.5;
 			this.ctx.fillStyle = '#' + tile.color;
-			this.ctx.fillRect(
-				this.gamePanelLeft + tile.x * this.tileSize,
-				this.gamePanelTop + tile.y * this.tileSize,
-				this.tileSize, this.tileSize);
-			this.ctx.globalAlpha = 1;
+			if (tile.type === 'F') {
+				this.ctx.beginPath();
+				this.ctx.moveTo(x + this.tileSize * 4 / 16, y + this.tileSize * 5 / 16);
+				this.ctx.lineTo(x + this.tileSize * 5 / 16, y + this.tileSize * 5 / 16);
+				this.ctx.lineTo(x + this.tileSize * 5 / 16, y + this.tileSize * 4 / 16);
+				this.ctx.lineTo(x + this.tileSize * 7 / 16, y + this.tileSize * 4 / 16);
+				this.ctx.lineTo(x + this.tileSize * 7 / 16, y + this.tileSize * 3 / 16);
+				this.ctx.lineTo(x + this.tileSize * 9 / 16, y + this.tileSize * 3 / 16);
+				this.ctx.lineTo(x + this.tileSize * 9 / 16, y + this.tileSize * 8 / 16);
+				this.ctx.lineTo(x + this.tileSize * 7 / 16, y + this.tileSize * 8 / 16);
+				this.ctx.lineTo(x + this.tileSize * 7 / 16, y + this.tileSize * 7 / 16);
+				this.ctx.lineTo(x + this.tileSize * 5 / 16, y + this.tileSize * 7 / 16);
+				this.ctx.lineTo(x + this.tileSize * 5 / 16, y + this.tileSize * 6 / 16);
+				this.ctx.lineTo(x + this.tileSize * 4 / 16, y + this.tileSize * 6 / 16);
+				this.ctx.closePath();
+				this.ctx.fill();
+				this.ctx.stroke();
+			} else {
+				this.ctx.globalAlpha = 0.5;
+				this.ctx.fillRect(
+					x, y,
+					this.tileSize, this.tileSize);
+				this.ctx.globalAlpha = 1;
+			}
 		}
 	}
 
 	resize(self) {
 		self.canvas.width = window.innerWidth;
 		self.canvas.height = window.innerHeight;
-		self.render();
+		self.init();
 	}
 }
 

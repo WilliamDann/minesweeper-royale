@@ -25,8 +25,8 @@ function pointInRect(point, rect) {
 }
 function randomHue() {
 	h = Math.random();
-	s = 0.8;
-	l = 0.8;
+	s = 0.5;
+	l = 0.5;
 	let r, g, b;
 	if (s === 0) {
 		r = g = b = l; // achromatic
@@ -101,9 +101,10 @@ router.ws('/', function (ws, req) {
 				if (msg.x == undefined || msg.y == undefined) return console.error("invalid", data);
 				let x = msg.x + ws.user.view.x,
 					y = msg.y + ws.user.view.y;
-				if (!ws.user.alive) {
+				if (!ws.user.alive || field.field[y][x].selected || msg.x < 0 || msg.y < 0 || msg.x > ws.user.view.w || msg.y > ws.user.view.h) {
 					return;
 				}
+				console.log(msg.x, msg.y, ws.user.view);
 
 				if (ws.user.firstClick && field.field[y][x].number === -1) {
 					field.field[y][x].number = 0;
@@ -133,7 +134,6 @@ router.ws('/', function (ws, req) {
 					broadcast(null, 'leaderboard', {count: getUsers().filter(u => u.alive).length});
 				}
 				ws.user.firstClick = false;
-				if (field.field[y][x].selected || !pointInRect({ x: x, y: y }, ws.user.view)) return;
 				let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y, ws.user.color);
 				for (let sock of getSockets()) {
 					let theseUpdates = [];
