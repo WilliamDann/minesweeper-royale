@@ -23,9 +23,3 @@ class GameSocket extends EventEmitter {
 		this.ws.send(JSON.stringify(data));
 	}
 }
-
-class Board {
-	constructor(width, height) {
-
-	}
-}

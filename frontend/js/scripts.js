@@ -7,8 +7,7 @@ lobby.username = $('username');
 lobby.error = $('lerror');
 
 const game = $('game');
-game.canvas = $('canvas');
-game.canvas
+game.canvas = new GameCanvas($('canvas'));
 
 const sock = new GameSocket('ws://demos.kaazing.com/echo');
 
