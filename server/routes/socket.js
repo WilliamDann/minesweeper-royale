@@ -21,7 +21,7 @@ function intersectRect(r1, r2) {
 		r2.y + r1.h < r1.y);
 }
 function pointInRect(point, rect) {
-	return rect.x <= point.x && point.x <= rect.x + rect.w && rect.y <= point.y && point.y <= rect.y + rect.h;
+	return rect.x <= point.x && point.x < rect.x + rect.w && rect.y <= point.y && point.y < rect.y + rect.h;
 }
 function randomHue() {
 	h = Math.random();
@@ -101,6 +101,9 @@ router.ws('/', function (ws, req) {
 				if (msg.x == undefined || msg.y == undefined) return console.error("invalid", data);
 				let x = msg.x + ws.user.view.x,
 					y = msg.y + ws.user.view.y;
+				if (!ws.user.alive) {
+					return;
+				}
 
 				if (ws.user.firstClick && field.field[y][x].number === -1) {
 					field.field[y][x].number = 0;
@@ -126,7 +129,7 @@ router.ws('/', function (ws, req) {
 							}
 						}
 					}
-					ws.send(JSON.stringify({ action: 'reveal', tiles: theseUpdates.map(t => t.serialize(ws.user.view)) }));
+					ws.send(JSON.stringify({ action: 'die', tiles: theseUpdates.map(t => t.serialize(ws.user.view)) }));
 				}
 				ws.user.firstClick = false;
 				if (field.field[y][x].selected || !pointInRect({ x: x, y: y }, ws.user.view)) return;
