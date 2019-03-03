@@ -33,8 +33,8 @@ class GameCanvas {
 
 				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
 					if (this.clickingTile)
-						this.lastClickingTile = this.getTile(this.clickingTile.x, this.clickingTile.y);
-					this.clickingTile = { x: x, y: y, type: 0 };
+						this.lastClickingTile = this.getTile(this.clickingTile.x, this.clickingTile.y) || { x: this.clickingTile.x, y: this.clickingTile.y, type: 'U' };
+					this.clickingTile = { x: x, y: y, type: 0, color: this.myColor };
 					this.render();
 
 				}
@@ -48,7 +48,7 @@ class GameCanvas {
 			if (ev.which == 3) {
 				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
-				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
+				if (x >= 0 && y >= 0 && x < this.numXTiles - 1 && y < this.numYTiles - 1 && !this.getTile(x, y)) {
 					this.drawTile({ type: 'F', x: x, y: y });
 					return false;
 				}
@@ -130,25 +130,23 @@ class GameCanvas {
 	}
 
 	render() {
-		if (this.clickingTile && this.mouseDown) {
-			this.drawTile(this.clickingTile);
-		}
 		if (this.lastClickingTile) {
 			this.drawTile(this.lastClickingTile);
+		}
+		if (this.clickingTile && this.mouseDown) {
+			this.drawTile(this.clickingTile);
 		}
 	}
 	getTile(x, y) {
 		return this.tiles.find(t => t.x === x && t.y === y);
 	}
 	drawTile(tile) {
-		console.log(tile);
 		this.ctx.drawImage($('tile' + tile.type),
 			this.gamePanelLeft + tile.x * this.tileSize,
 			this.gamePanelTop + tile.y * this.tileSize,
 			this.tileSize, this.tileSize);
 
 		if (tile.color) {
-			console.log(tile.color);
 			this.ctx.globalAlpha = 0.5;
 			this.ctx.fillStyle = '#' + tile.color;
 			this.ctx.fillRect(

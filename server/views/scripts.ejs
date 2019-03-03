@@ -35,6 +35,7 @@ sock.on('start', msg => {
 	lobby.style.display = 'none';
 	game.style.display = 'block';
 	game.canvas = new GameCanvas($('canvas'), sock, msg.width, msg.height);
+	game.canvas.myColor = msg.color;
 });
 
 sock.on('reveal', msg => {
