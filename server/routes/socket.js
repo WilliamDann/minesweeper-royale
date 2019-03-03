@@ -60,7 +60,7 @@ router.ws('/', function (ws, req) {
 	ws.user = { name: '', ready: false, firstClick: true, alive: true };
 	broadcast(ws, 'lobby', { count: getUsers().length, ready: getUsers().filter(u => u.ready).length });
 	ws.on('message', function (data) {
-		console.log(getUsers());
+		//console.log(getUsers());
 		let msg;
 		try {
 			msg = JSON.parse(data);
@@ -92,7 +92,7 @@ router.ws('/', function (ws, req) {
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(500);
+					field.populate(1000);
 					field.print();
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
@@ -108,15 +108,11 @@ router.ws('/', function (ws, req) {
 
 				if (ws.user.firstClick && field.field[y][x].number === -1) {
 					field.field[y][x].number = 0;
-					console.log(x, y);
 					let surr = field.getSurrounding(x, y);
-					console.log(field.getSurrounding(x, y));
 					for (let i = 0; i < surr.length; i++) {
 						let tile = field.field[surr[i].y][surr[i].x];
-						console.log(' ', tile.x, tile.y, tile.number);
 						if (tile.number === -1) field.field[y][x].number++;
 						else if (tile.number > 0) tile.number--;
-						console.log(' ', tile.x, tile.y, tile.number);
 					}
 					field.field[y][x].number = 0
 				} else if (field.field[y][x].number === -1) {
@@ -131,10 +127,24 @@ router.ws('/', function (ws, req) {
 						}
 					}
 					ws.send(JSON.stringify({ action: 'die', tiles: theseUpdates.map(t => t.serialize(ws.user.view)) }));
-					broadcast(null, 'leaderboard', {count: getUsers().filter(u => u.alive).length});
+					broadcast(null, 'leaderboard', { count: getUsers().filter(u => u.alive).length });
+					return;
 				}
 				ws.user.firstClick = false;
 				let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y, ws.user.color);
+				let old = JSON.parse(JSON.stringify(ws.user.view));
+				let x2 = ws.user.view.x + ws.user.view.w;
+				let y2 = ws.user.view.y + ws.user.view.h;
+				for (let tile of updates) {
+					ws.user.view.x = Math.min(ws.user.view.x, tile.x - 3);
+					ws.user.view.y = Math.min(ws.user.view.y, tile.y - 3);
+					x2 = Math.max(x2, tile.x + 3);
+					y2 = Math.max(y2, tile.y + 3);
+				}
+				ws.user.view.w = x2 - ws.user.view.x;
+				ws.user.view.h = y2 - ws.user.view.y;
+				if (ws.user.view.x != old.x || ws.user.view.y != old.y || ws.user.view.w != old.w || ws.user.view.h != old.h)
+					send('resize', {x: ws.user.view.x - old.x, y: ws.user.view.y - old.y, w: ws.user.view.w, h: ws.user.view.h});
 				for (let sock of getSockets()) {
 					let theseUpdates = [];
 					for (let tile of updates) {

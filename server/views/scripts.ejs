@@ -39,6 +39,10 @@ sock.on('start', msg => {
 	game.canvas.drawSevenSegment(msg.count, 32, 28);
 });
 
+sock.on('resize', msg => {
+	game.canvas.resizeBoard(msg);
+});
+
 sock.on('reveal', msg => {
 	let tiles = msg.tiles.map(t => new Tile(t));
 	for (tile of tiles) {

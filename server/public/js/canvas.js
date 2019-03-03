@@ -19,14 +19,13 @@ class GameCanvas {
 		this.resize(self);
 	}
 
-	resizeBoard(x, y, w, h) {
+	resizeBoard({x, y, w, h}) {
 		this.numXTiles = w;
 		this.numYTiles = h;
 		this.tiles.forEach(tile => {
 			tile.x += x;
 			tile.y += y;
 		});
-		this.resize(self);
 		this.init();
 	}
 
