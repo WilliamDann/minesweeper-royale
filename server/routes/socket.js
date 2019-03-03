@@ -92,7 +92,7 @@ router.ws('/', function (ws, req) {
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(1000);
+					field.populate(500);
 					field.print();
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
