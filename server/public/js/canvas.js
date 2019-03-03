@@ -32,7 +32,8 @@ class GameCanvas {
 				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
 				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
-					this.lastClickingTile = this.clickingTile;
+					if (this.clickingTile)
+						this.lastClickingTile = this.getTile(this.clickingTile.x, this.clickingTile.y);
 					this.clickingTile = { x: x, y: y, type: 0 };
 					this.render();
 
@@ -133,7 +134,7 @@ class GameCanvas {
 			this.drawTile(this.clickingTile);
 		}
 		if (this.lastClickingTile) {
-			this.drawTile(this.getTile(this.lastClickingTile.x, this.lastClickingTile.y));
+			this.drawTile(this.lastClickingTile);
 		}
 	}
 	getTile(x, y) {
@@ -147,7 +148,8 @@ class GameCanvas {
 			this.tileSize, this.tileSize);
 
 		if (tile.color) {
-			this.ctx.globalAlpha = 0.1;
+			console.log(tile.color);
+			this.ctx.globalAlpha = 0.5;
 			this.ctx.fillStyle = '#' + tile.color;
 			this.ctx.fillRect(
 				this.gamePanelLeft + tile.x * this.tileSize,
