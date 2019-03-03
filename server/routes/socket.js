@@ -62,7 +62,7 @@ router.ws('/', function (ws, req) {
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(2000);
+					field.populate(1000);
 					field.print();
 					broadcast(null, 'start', { width: 20, height: 10 });
 				}

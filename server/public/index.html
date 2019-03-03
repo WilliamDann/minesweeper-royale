@@ -14,15 +14,15 @@
 </head>
 
 <body>
-
-	<div id="lobby">
-			<h1>Minesweeper Royale</h1>
+	<div class="lobby" id="lobby">
+		<h1>Minesweeper Royale</h1>
 		<h2>Lobby</h2>
 		<p id="count"></p>
 		<input type="text" id="username" placeholder="username" disabled>
 		<input type="button" value="Ready" id="ready" disabled>
 		<p id="lerror"></p>
 	</div>
+
 	<div id="game" style="display:none;">
 		<canvas id="canvas"></canvas>
 
@@ -55,6 +55,21 @@
 	<script src="js/socket.js"></script>
 	<script src="js/canvas.js"></script>
 	<script src="js/scripts.js"></script>
+
+	<script>
+		var input = document.getElementById("username");
+		window.onload = function() {
+			input.focus();
+		}
+
+
+		input.addEventListener("keyup", function(event) {
+			if (event.keyCode === 13) {
+				event.preventDefault();
+				document.getElementById("ready").click();
+			}
+		});
+	</script>
 </body>
 
 </html>
