@@ -22,93 +22,6 @@ class Tile {
 } module.exports.Tile = Tile;
 
 class Minefield {
-<<<<<<< HEAD
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-
-        this.field = null;
-    }
-    // debug print
-    print() {
-        console.log(this.field.map(row => row.map(t => t.number).join('\t')).join('\n'))
-    }
-    
-    // get points touching another point
-    getSurrounding(x, y) {
-        let points = [
-            { x: x + 1, y: y },
-            { x: x - 1, y: y },
-            { x: x, y: y + 1 },
-            { x: x, y: y - 1 },
-            { x: x + 1, y: y + 1 },
-            { x: x - 1, y: y + 1 },
-            { x: x - 1, y: y - 1 },
-            { x: x + 1, y: y - 1 }
-        ]
-        let fin = []
-
-        for (let i of points) {
-            if ((i.x < this.width && i.x >= 0) && (i.y < this.height && i.y >= 0)) {
-                fin.push(i);
-            }
-        }
-
-        return fin;
-    }
-
-    // Populate the board with bombs and numbers
-    populate(bombs) {
-        this.field = []
-
-        for (let i = 0; i < this.height; i++) {
-            let obj = []
-            for (let j = 0; j < this.width; j++) {
-                obj.push(new Tile(0, 'fff', false, j, i));
-            }
-            this.field.push(obj);
-        }
-
-        for (let i = 0; i < bombs; i++) {
-            let x = randInt(0, this.width-1);
-            let y = randInt(0, this.height-1);
-
-            if (this.field[y][x].number == -1) continue;
-            this.field[y][x].number = -1;
-
-            let around = this.getSurrounding(x, y);
-            for (let j of around) {
-                if (this.field[j.y][j.x].number != -1) {
-                    this.field[j.y][j.x].number++;
-                }
-            }
-        }
-
-        return this.field;
-    }
-
-    // handle a click
-    click(x, y, col) {
-        var that = this;
-        function recurse(x, y) {
-            arr.push(that.field[y][x]);
-			that.field[y][x].cleared = true;
-			that.field[y][x].color = col;
-
-            if (that.field[y][x].number != -1) {
-                var points = that.getSurrounding(x, y);
-                for (let point of points) {
-                    if (!that.field[point.y][point.x].cleared) {
-                        recurse(point.x, point.y);
-                    }
-                }
-            }
-        }
-        var arr = []
-        recurse(x, y);
-        return arr;
-    }
-=======
 	constructor(width, height) {
 		this.width = width;
 		this.height = height;
@@ -193,5 +106,4 @@ class Minefield {
 		recurse(x, y);
 		return arr;
 	}
->>>>>>> 1bdc2c91606a0f5099a0502634ddca4edd91d8ed
 } module.exports.Minefield = Minefield;

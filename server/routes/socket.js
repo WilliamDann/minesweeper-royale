@@ -133,9 +133,11 @@ router.ws('/', function (ws, req) {
 					if (alive === 0) {
 						broadcast(null, 'gameover', {
 							leaderboard: getUsers().map(user => {
-								return { name: user.name, score: [].concat.apply([], field.field).filter(t => t.color === user.color).length };
+								return { name: user.name, color: user.color, score: [].concat.apply([], field.field).filter(t => t.color === user.color).length };
 							}).sort((a, b) => a - b)
 						});
+						field = null;
+						getSockets().forEach(s => s.close());
 					}
 					return;
 				}

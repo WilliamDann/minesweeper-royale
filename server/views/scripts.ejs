@@ -26,20 +26,28 @@ sock.on('nametaken', msg => {
 	lobby.username.disabled = false;
 	lobby.error.innerText = msg.message;
 	lobby.username.focus();
+});
+
+sock.on('gameover', msg => {
+
 	let m = document.getElementById('id01')
-	m.style.display='block';
+	m.style.display = 'block';
 
 	let p = document.createElement('ul')
 	for (i of msg.leaderboard) {
 		let t = document.createElement('li')
-		t.innerHTML = i.name + ": " + i.score;
-		t.style.backgroundColor = "#"+i.color;
+		t.innerHTML = "<b>" +i.name + "</b>: " + i.score;
+		t.style.backgroundColor = "#" + i.color;
+		p.appendChild(t);
 	}
-	m.appendChild(p);
-	let ref = document.createElement('button');
-	ref.onclick = () => { 
+	document.querySelector('#minner').appendChild(p);
+	let ref = document.createElement('input');
+	ref.value = 'New Game';
+	ref.type = 'button';
+	ref.onclick = () => {
 		window.location.reload();
 	}
+	document.querySelector('#minner').appendChild(ref);
 });
 
 sock.on('lobby', msg => {
