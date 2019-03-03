@@ -39,12 +39,21 @@ sock.on('start', msg => {
 });
 
 sock.on('reveal', msg => {
-	for (tile of msg.tiles) {
-		game.canvas.drawTile(new Tile(tile));
+	let tiles = msg.tiles.map(t => new Tile(t));
+	for (tile of tiles) {
+		game.canvas.drawTile(tile);
 	}
-    game.canvas.tiles = game.canvas.tiles.concat(msg.tiles.map(t => new Tile(t)));
+	game.canvas.tiles = game.canvas.tiles.concat(tiles);
 	//this.drawTile()
 });
+sock.on('die', msg => {
+	let tiles = msg.tiles.map(t => new Tile(t));
+	for (tile of tiles) {
+		game.canvas.drawTile(tile);
+	}
+	game.canvas.tiles = game.canvas.tiles.concat(tiles);
+	game.canvas.die();
+})
 
 window.oncontextmenu = () => {
 	return false;

@@ -76,6 +76,12 @@ class GameCanvas {
 		};
 		this.canvas.onmouseout = () => this.mouseDown = false;
 	}
+	die () {
+		this.canvas.onmousedown = undefined;
+		this.canvas.onmousemove = undefined;
+		this.canvas.onmouseup = undefined;
+		this.canvas.onmouseout = undefined;
+	}
 
 	screenToTileCoords(x, y) {
 		return {
