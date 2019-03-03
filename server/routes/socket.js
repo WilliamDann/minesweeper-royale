@@ -75,9 +75,9 @@ router.ws('/', function (ws, req) {
 				for (let sock of getSockets()) {
 					let theseUpdates = []
 					for (let tile of updates) { // TODO fix
-						//if (pointInRect(tile.x, tile.y, sock.user.view)) {
+						if (pointInRect(tile, sock.user.view)) {
 							theseUpdates.push(tile);
-						//}
+						}
 					}
 					console.log(theseUpdates);
 					if (theseUpdates.length) {

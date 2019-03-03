@@ -39,4 +39,5 @@ sock.on('start', msg => {
 
 sock.on('reveal', msg => {
 	game.canvas.tiles = game.canvas.tiles.concat(msg.tiles.map(t => new Tile(t)));
+	game.canvas.render();
 });
