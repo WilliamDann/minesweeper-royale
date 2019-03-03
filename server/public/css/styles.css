@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=VT323');
-
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
 #lerror {
 	color: red;
 }
@@ -13,11 +12,12 @@ canvas {
   -ms-interpolation-mode: nearest-neighbor;
 }
 body {
+	background-color: silver;
 	margin: 0;
 	overflow: hidden;
 
 	text-align: center;
-	font-family: 'VT323', monospace;
+	font-family: 'Montserrat', sans-serif;
 }
 * {
 	user-select: none;
@@ -26,7 +26,7 @@ body {
 
 .lobby {
   position: fixed;
-  top: 50%;
+  top: 35%;
   left: 50%;
 	transform: translate(-50%, -50%);
 	text-align: center;
@@ -37,4 +37,36 @@ h1 {
 }
 h2 {
 	font-size: 40px;
+}
+
+input {
+	padding: 15px;
+}
+
+.w3-modal {
+    z-index: 3;
+    display: none;
+    padding-top: 100px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+	background-color: rgba(0,0,0,0.4);
+}
+.w3-container, .w3-panel {
+    padding: 0.01em 16px;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+.w3-modal-content {
+    margin: auto;
+    background-color: #fff;
+    position: relative;
+    padding: 0;
+    outline: 0;
+    width: 600px;
 }

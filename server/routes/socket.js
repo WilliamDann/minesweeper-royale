@@ -71,6 +71,7 @@ router.ws('/', function (ws, req) {
 
 		switch (msg.action) {
 			case "ready":
+				if (field) return send('nametaken', { message: 'Game In Progress' });
 				if (!msg.name) return send('nametaken', { message: 'Invalid Username' });
 				if (getUsers().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
 				ws.user.name = msg.name;
