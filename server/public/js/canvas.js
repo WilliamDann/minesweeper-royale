@@ -16,6 +16,7 @@ class GameCanvas {
 		let self = this;
 		window.addEventListener('resize', () => this.resize(self));
 		this.resize(self);
+		this.init();
 	}
 
 	_initMouse() {
@@ -79,38 +80,41 @@ class GameCanvas {
 		}
 	}
 
-	render() {
-		// Background
-		this.drawRect(0, 0, this.canvas.width, this.canvas.height, false);
-		// Header
-		this.drawRect(16, 16, this.canvas.width - 32, 72, true);
-		this.drawSevenSegment(0, 32, 28);
-
+	// initilize the canvas with a blank board
+	init () {
+		
 		// Field
 		let singleTileWidth = (this.canvas.width - 40) / this.numXTiles;
 		let singleTileHeight = (this.canvas.height - 124) / this.numYTiles;
-
+	
 		if (singleTileWidth < singleTileHeight) this.tileSize = singleTileWidth;
 		else this.tileSize = singleTileHeight;
-
+		
 		let gamePanelWidth = this.tileSize * this.numXTiles;
 		let gamePanelHeight = this.tileSize * this.numYTiles;
-
+	
 		this.gamePanelLeft = (this.canvas.width - gamePanelWidth) / 2;
 		this.gamePanelTop = 104;
-
+		
 		this.drawRect(this.gamePanelLeft - 4, this.gamePanelTop - 4, gamePanelWidth + 8, gamePanelHeight + 8, true, true); // draw panel
-
+		
+		
+		// Background
+		this.drawRect(0, 0, this.canvas.width, this.canvas.height, false);
 		for (let y = 0; y < this.numYTiles; y++) {
 			for (let x = 0; x < this.numXTiles; x++) {
 				this.drawTile({type: 'U', x: x, y: y});
 			}
 		}
+		
+		// Header
+		this.drawRect(16, 16, this.canvas.width - 32, 72, true);
+		this.drawSevenSegment(0, 32, 28);
+	}
+
+	render() {
 		if (this.clickingTile && this.mouseDown) {
 			this.drawTile(this.clickingTile);
-		}
-		for (let tile of this.tiles) {
-			this.drawTile(tile);
 		}
 	}
 	getTile(x, y) {
