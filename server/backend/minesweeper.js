@@ -48,7 +48,7 @@ class Minefield {
         let fin = []
 
         for (let i of points) {
-            if ((i.x < this.width && i.x >= 0) && (i.y < this.width && i.y >= 0)) {
+            if ((i.x < this.width && i.x >= 0) && (i.y < this.height && i.y >= 0)) {
                 fin.push(i);
             }
         }
@@ -90,14 +90,13 @@ class Minefield {
     click(x, y, col) {
         var that = this;
         function recurse(x, y) {
-            arr.push(that.field[y][x]);
-						that.field[y][x].cleared = true;
-						that.field[y][x].color = col;
-
-            if (that.field[y][x].number == 0) {
+            if (that.field[y][x].number != -1) {
+                arr.push(that.field[y][x]);
+                that.field[y][x].cleared = true;
+                that.field[y][x].color = col;
                 var points = that.getSurrounding(x, y);
                 for (let point of points) {
-                    if (that.field[point.y][point.x].cleared == false) {
+                    if (!that.field[point.y][point.x].cleared) {
                         recurse(point.x, point.y);
                     }
                 }
