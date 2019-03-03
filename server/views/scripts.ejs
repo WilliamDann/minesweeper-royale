@@ -41,6 +41,10 @@ sock.on('reveal', msg => {
 	for (tile of msg.tiles) {
 		game.canvas.drawTile(new Tile(tile));
 	}
-	// game.canvas.tiles = game.canvas.tiles.concat(msg.tiles.map(t => new Tile(t)));
+	game.canvas.tiles = game.canvas.tiles.concat(msg.tiles.map(t => new Tile(t)));
 	//this.drawTile()
 });
+
+window.oncontextmenu = () => {
+	return false;
+}

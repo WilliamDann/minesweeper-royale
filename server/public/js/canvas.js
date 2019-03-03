@@ -27,16 +27,28 @@ class GameCanvas {
 			return false;
 		};
 		this.canvas.onmousemove = (ev) => {
-			if (this.mouseDown) {
+			if (this.mouseDown && ev.which != 3) {
 				let {x, y} = this.screenToTileCoords(ev.clientX, ev.clientY);
 
 				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y))
 					this.clickingTile = { x: x, y: y, type: 0 };
 				this.render();
 			}
+
 			return false;
 		};
 		this.canvas.onmouseup = ev => {
+			// If right mouse button
+			if (ev.which == 3 && this.mouseDown) {
+				let {x, y} = this.screenToTileCoords(ev.clientX, ev.clientY);
+
+				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
+					this.drawTile({type: 'F', x: x, y: y});
+					this.mouseDown = false;
+					return false;
+				}
+			}
+			
 			this.mouseDown = false;
 			let coords = this.screenToTileCoords(ev.clientX, ev.clientY);
 			this.sock.send('click', coords);
@@ -106,7 +118,7 @@ class GameCanvas {
 				this.drawTile({type: 'U', x: x, y: y});
 			}
 		}
-		
+
 		// Header
 		this.drawRect(16, 16, this.canvas.width - 32, 72, true);
 		this.drawSevenSegment(0, 32, 28);
