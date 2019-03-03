@@ -21,8 +21,35 @@ function intersectRect(r1, r2) {
 		r2.y + r1.h < r1.y);
 }
 function pointInRect(point, rect) {
-	console.log(rect.x, point.x);
 	return rect.x <= point.x && point.x <= rect.x + rect.w && rect.y <= point.y && point.y <= rect.y + rect.h;
+}
+function randomHue() {
+  h = Math.random();
+  s= 0.8;
+  l = 0.8;
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l; // achromatic
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+  const toHex = x => {
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 var field;
 router.ws('/', function (ws, req) {
@@ -48,6 +75,7 @@ router.ws('/', function (ws, req) {
 				if (getUsers().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
 				ws.user.name = msg.name;
 				ws.user.ready = true;
+				ws.user.color = randomHue();
 				let us = getUsers();
 				let r = us.filter(u => u.ready).length;
 				let c = us.length;
@@ -71,12 +99,10 @@ router.ws('/', function (ws, req) {
 				break;
 			case "click":
 				if (msg.x == undefined || msg.y == undefined) return console.error("invalid", data);
-				console.log();
 				let x = msg.x + ws.user.view.x,
 					y = msg.y + ws.user.view.y;
 				if (field.field[y][x].selected || !pointInRect({x: x, y: y}, ws.user.view)) return;
-					let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y);
-				console.log(updates);
+					let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y, ws.user.color);
 				for (let sock of getSockets()) {
 					let theseUpdates = []
 					for (let tile of updates) { // TODO fix
@@ -84,7 +110,6 @@ router.ws('/', function (ws, req) {
 							theseUpdates.push(tile);
 						}
 					}
-					console.log(theseUpdates);
 					if (theseUpdates.length) {
 						sock.send(JSON.stringify({ action: 'reveal', tiles: theseUpdates.map(t => t.serialize(sock.user.view)) }));
 					}

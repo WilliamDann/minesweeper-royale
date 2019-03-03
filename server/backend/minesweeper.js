@@ -87,11 +87,12 @@ class Minefield {
     }
 
     // handle a click
-    click(x, y) {
+    click(x, y, col) {
         var that = this;
         function recurse(x, y) {
             arr.push(that.field[y][x]);
-            that.field[y][x].cleared = true;
+						that.field[y][x].cleared = true;
+						that.field[y][x].color = col;
 
             if (that.field[y][x].number == 0) {
                 var points = that.getSurrounding(x, y);
