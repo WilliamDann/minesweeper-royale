@@ -19,14 +19,13 @@ class GameCanvas {
 		this.resize(self);
 	}
 
-	resizeBoard(x, y, w, h) {
+	resizeBoard({x, y, w, h}) {
 		this.numXTiles = w;
 		this.numYTiles = h;
 		this.tiles.forEach(tile => {
-			tile.x += x;
-			tile.y += y;
+			tile.x -= x;
+			tile.y -= y;
 		});
-		this.resize(self);
 		this.init();
 	}
 
@@ -179,7 +178,7 @@ class GameCanvas {
 		this.ctx.drawImage($('tile' + tile.type),
 			x, y,
 			this.tileSize, this.tileSize);
-		if (tile.color) {
+		if (tile.color && tile.type !== 'U') {
 			this.ctx.fillStyle = '#' + tile.color;
 			if (tile.type === 'F') {
 				this.ctx.beginPath();
