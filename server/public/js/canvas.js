@@ -48,8 +48,23 @@ class GameCanvas {
 			if (ev.which == 3) {
 				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
-				if (x >= 0 && y >= 0 && x < this.numXTiles - 1 && y < this.numYTiles - 1 && !this.getTile(x, y)) {
-					this.drawTile({ type: 'F', x: x, y: y });
+				if (x >= 0 && y >= 0 && x < this.numXTiles - 1 && y < this.numYTiles - 1) {
+					let tile = this.getTile(x, y);
+					
+					if (!tile) {
+						tile = {type: 'U', x:x, y:y}
+						game.canvas.tiles.push(tile);
+					}
+
+					console.log(tile.type)
+					if (tile.type == "F") {
+						this.drawTile({type: 'U', x: x, y: y});
+						tile.type = "U";
+					} else if (tile.type == "U") {
+						this.drawTile({type: 'F', x: x, y: y});
+						tile.type = "F";
+					}
+
 					return false;
 				}
 			}
