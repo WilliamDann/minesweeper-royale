@@ -47,8 +47,23 @@ class GameCanvas {
 			if (ev.which == 3) {
 				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
-				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
-					this.drawTile({ type: 'F', x: x, y: y });
+				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles) {
+					let tile = this.getTile(x, y);
+					
+					if (!tile) {
+						tile = {type: 'U', x:x, y:y}
+						game.canvas.tiles.push(tile);
+					}
+
+					console.log(tile.type)
+					if (tile.type == "F") {
+						this.drawTile({type: 'U', x: x, y: y});
+						tile.type = "U";
+					} else if (tile.type == "U") {
+						this.drawTile({type: 'F', x: x, y: y});
+						tile.type = "F";
+					}
+
 					return false;
 				}
 			}
@@ -140,7 +155,6 @@ class GameCanvas {
 		return this.tiles.find(t => t.x === x && t.y === y);
 	}
 	drawTile(tile) {
-		console.log(tile);
 		this.ctx.drawImage($('tile' + tile.type),
 			this.gamePanelLeft + tile.x * this.tileSize,
 			this.gamePanelTop + tile.y * this.tileSize,
