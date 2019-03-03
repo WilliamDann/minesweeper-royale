@@ -12,7 +12,7 @@ class GameSocket extends EventEmitter {
 		try {
 			msg = JSON.parse(ev.data);
 		} catch (e) {
-			return console.error(e);
+			return console.error(ev.data);
 		}
 		if (!msg.action) return console.error('No action: ', ev.data);
 		this.emit(msg.action, msg);
