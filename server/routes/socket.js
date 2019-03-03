@@ -94,7 +94,7 @@ router.ws('/', function (ws, req) {
 					}
 					field.populate(1000);
 					field.print();
-					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color })));
+					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
 				break;
 			case "click":
@@ -130,6 +130,7 @@ router.ws('/', function (ws, req) {
 						}
 					}
 					ws.send(JSON.stringify({ action: 'die', tiles: theseUpdates.map(t => t.serialize(ws.user.view)) }));
+					broadcast(null, 'leaderboard', {count: getUsers().filter(u => u.alive).length});
 				}
 				ws.user.firstClick = false;
 				if (field.field[y][x].selected || !pointInRect({ x: x, y: y }, ws.user.view)) return;
