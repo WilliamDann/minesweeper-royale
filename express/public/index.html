@@ -1,13 +1,59 @@
-<html>
+<!DOCTYPE html>
+
+<html lang="en">
 
 <head>
-  <title>Express</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
+	<meta charset="utf-8">
+
+	<title>Minesweeper Royale</title>
+	<meta name="description" content="Minesweeper Royale">
+	<meta name="author" content="Code Monkeys">
+
+	<link rel="stylesheet" href="css/styles.css">
+
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+
+	<div id="lobby">
+			<h1>Minesweeper Royale</h1>
+		<h2>Lobby</h2>
+		<p id="count"></p>
+		<input type="text" id="username" placeholder="username" disabled>
+		<input type="button" value="Ready" id="ready" disabled>
+		<p id="lerror"></p>
+	</div>
+	<div id="game" style="display:none;">
+		<canvas id="canvas"></canvas>
+
+		<!-- Sprites -->
+		<div style="display:none;">
+				<img id="time0" src="img/time0.png">
+				<img id="time1" src="img/time1.png">
+				<img id="time2" src="img/time2.png">
+				<img id="time3" src="img/time3.png">
+				<img id="time4" src="img/time4.png">
+				<img id="time5" src="img/time5.png">
+				<img id="time6" src="img/time6.png">
+				<img id="time7" src="img/time7.png">
+				<img id="time8" src="img/time8.png">
+				<img id="time9" src="img/time9.png">
+				<img id="tile0" src="img/tile0.png">
+				<img id="tile1" src="img/tile1.png">
+				<img id="tile2" src="img/tile2.png">
+				<img id="tile3" src="img/tile3.png">
+				<img id="tile4" src="img/tile4.png">
+				<img id="tile5" src="img/tile5.png">
+				<img id="tile6" src="img/tile6.png">
+				<img id="tile7" src="img/tile7.png">
+				<img id="tile8" src="img/tile8.png">
+				<img id="tileU" src="img/tileU.png">
+		</div>
+	</div>
+	<script src="js/EventEmitter/EventEmitter.js"></script>
+	<script src="js/socket.js"></script>
+	<script src="js/canvas.js"></script>
+	<script src="js/scripts.js"></script>
 </body>
 
 </html>
