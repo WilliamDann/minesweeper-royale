@@ -8,7 +8,7 @@ lobby.error = $('lerror');
 
 const game = $('game');
 
-const sock = new GameSocket('ws://localhost:5000');
+const sock = new GameSocket('<%= socket %>');
 
 sock.on('open', () => {
 	lobby.username.disabled = false;
@@ -18,6 +18,8 @@ sock.on('open', () => {
 lobby.ready.addEventListener('click', () => {
 	sock.send('ready', { name: lobby.username.value });
 	lobby.username.disabled = true;
+	lobby.ready.disabed = true;
+	lobby.error.innerText = '';
 });
 
 sock.on('nametaken', msg => {
