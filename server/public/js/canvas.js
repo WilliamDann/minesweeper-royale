@@ -23,8 +23,8 @@ class GameCanvas {
 		this.numXTiles = w;
 		this.numYTiles = h;
 		this.tiles.forEach(tile => {
-			tile.x += x;
-			tile.y += y;
+			tile.x -= x;
+			tile.y -= y;
 		});
 		this.init();
 	}
@@ -178,7 +178,7 @@ class GameCanvas {
 		this.ctx.drawImage($('tile' + tile.type),
 			x, y,
 			this.tileSize, this.tileSize);
-		if (tile.color) {
+		if (tile.color && tile.type !== 'U') {
 			this.ctx.fillStyle = '#' + tile.color;
 			if (tile.type === 'F') {
 				this.ctx.beginPath();
