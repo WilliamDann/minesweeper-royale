@@ -2,7 +2,7 @@
 function randInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 class Tile {
@@ -75,9 +75,14 @@ class Minefield {
             this.field[y][x].number = -1;
 
             let around = this.getSurrounding(x, y);
-            for (let j in around) {
-                if (this.field[around[j].y][around[j].x].number != -1) {
-                    this.field[around[j].y][around[j].x].number++;
+            for (let j of around) {
+                try {
+                    if (this.field[j.y][j.x].number != -1) {
+                        this.field[j.y][j.x].number++;
+                    }
+                } catch (e) {
+                    console.log(j)
+                    console.error(e);
                 }
             }
         }
