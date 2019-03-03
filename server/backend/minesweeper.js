@@ -6,14 +6,16 @@ function randInt(min, max) {
 }
 
 class Tile {
-    constructor(number, color = "#fff", cleared = false) {
+    constructor(number, color = "#fff", cleared = false, x, y) {
         this.number = number;
         this.color = color;
-        this.cleared = cleared;
+				this.cleared = cleared;
+				this.x = x;
+				this.y = y;
     }
 
-    serialize() {
-        return JSON.stringify([this.number, this.cleared, this.color]);
+    serialize(view) {
+        return [this.number, this.cleared, this.color, this.x - view.x, this.y - view.y];
     }
 
 
@@ -61,7 +63,7 @@ class Minefield {
         for (let i = 0; i < this.height; i++) {
             let obj = []
             for (let j = 0; j < this.width; j++) {
-                obj.push(new Tile(0, 'fff', false));
+                obj.push(new Tile(0, 'fff', false, j, i));
             }
             this.field.push(obj);
         }
@@ -87,7 +89,7 @@ class Minefield {
     click(x, y) {
         var that = this;
         function recurse(x, y) {
-            arr.push({x: x, y: y});
+            arr.push(that.field[y][x]);
             that.field[y][x].cleared = true;
 
             if (that.field[y][x].number == 0) {

@@ -117,6 +117,7 @@ class GameCanvas {
 		return this.tiles.find(t => t.x === x && t.y === y);
 	}
 	drawTile(tile) {
+		console.log(tile);
 		this.ctx.drawImage($('tile' + tile.type),
 			this.gamePanelLeft + tile.x * this.tileSize,
 			this.gamePanelTop + tile.y * this.tileSize,
@@ -137,5 +138,14 @@ class GameCanvas {
 		self.canvas.width = window.innerWidth;
 		self.canvas.height = window.innerHeight;
 		self.render();
+	}
+}
+
+class Tile {
+	constructor(arr) {
+		this.type = arr[0];
+		this.color = arr[2];
+		this.x = arr[3];
+		this.y = arr[4];
 	}
 }
