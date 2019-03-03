@@ -36,6 +36,7 @@ sock.on('start', msg => {
 	game.style.display = 'block';
 	game.canvas = new GameCanvas($('canvas'), sock, msg.width, msg.height);
 	game.canvas.myColor = msg.color;
+	game.canvas.drawSevenSegment(msg.count, 32, 28);
 });
 
 sock.on('reveal', msg => {
@@ -53,6 +54,10 @@ sock.on('die', msg => {
 	}
 	game.canvas.tiles = game.canvas.tiles.concat(tiles);
 	game.canvas.die();
+})
+
+sock.on('leaderboard', msg => {
+	game.canvas.drawSevenSegment(msg.count, 32, 28);
 })
 
 window.oncontextmenu = () => {
