@@ -72,17 +72,13 @@ class Minefield {
             let x = randInt(0, this.width-1);
             let y = randInt(0, this.height-1);
 
+            if (this.field[y][x].number != 0) continue;
             this.field[y][x].number = -1;
 
             let around = this.getSurrounding(x, y);
             for (let j of around) {
-                try {
-                    if (this.field[j.y][j.x].number != -1) {
-                        this.field[j.y][j.x].number++;
-                    }
-                } catch (e) {
-                    console.log(j)
-                    console.error(e);
+                if (this.field[j.y][j.x].number != -1) {
+                    this.field[j.y][j.x].number++;
                 }
             }
         }
