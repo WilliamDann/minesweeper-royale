@@ -1,3 +1,4 @@
+
 var express = require('express');
 var router = express.Router();
 var minesweeper = require('../backend/minesweeper');
@@ -20,7 +21,8 @@ function intersectRect(r1, r2) {
 		r2.y + r1.h < r1.y);
 }
 function pointInRect(point, rect) {
-	return (rect.x <= point.x <= rect.x + rect.w) && (rect.y <= point.y <= rect.y + rect.h);
+	console.log(rect.x, point.x);
+	return rect.x <= point.x && point.x <= rect.x + rect.w && rect.y <= point.y && point.y <= rect.y + rect.h;
 }
 var field;
 router.ws('/', function (ws, req) {
@@ -69,8 +71,11 @@ router.ws('/', function (ws, req) {
 				break;
 			case "click":
 				if (msg.x == undefined || msg.y == undefined) return console.error("invalid", data);
-				console.log(msg.x + ws.user.view.x, msg.y + ws.user.view.y);
-				let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y); //TODO check if click in bounds
+				console.log();
+				let x = msg.x + ws.user.view.x,
+					y = msg.y + ws.user.view.y;
+				if (field.field[y][x].selected || !pointInRect({x: x, y: y}, ws.user.view)) return;
+					let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y);
 				console.log(updates);
 				for (let sock of getSockets()) {
 					let theseUpdates = []

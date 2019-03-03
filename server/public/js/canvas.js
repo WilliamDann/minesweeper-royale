@@ -5,6 +5,7 @@ class GameCanvas {
 		this.numXTiles = w;
 		this.numYTiles = h;
 		this.clickingTile = null;
+		this.lastClickingTile = null;
 
 		this.canvas = canvas;
 		this.ctx = canvas.getContext('2d');
@@ -28,27 +29,30 @@ class GameCanvas {
 		};
 		this.canvas.onmousemove = (ev) => {
 			if (this.mouseDown && ev.which != 3) {
-				let {x, y} = this.screenToTileCoords(ev.clientX, ev.clientY);
+				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
-				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y))
+				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
+					this.lastClickingTile = this.clickingTile;
 					this.clickingTile = { x: x, y: y, type: 0 };
-				this.render();
+					this.render();
+
+				}
 			}
 
 			return false;
 		};
 		this.canvas.onmouseup = ev => {
+			this.mouseDown = false;
 			// If right mouse button
-			if (ev.which == 3 && this.mouseDown) {
-				let {x, y} = this.screenToTileCoords(ev.clientX, ev.clientY);
+			if (ev.which == 3) {
+				let { x, y } = this.screenToTileCoords(ev.clientX, ev.clientY);
 
 				if (x >= 0 && y >= 0 && x < this.numXTiles && y < this.numYTiles && !this.getTile(x, y)) {
-					this.drawTile({type: 'F', x: x, y: y});
-					this.mouseDown = false;
+					this.drawTile({ type: 'F', x: x, y: y });
 					return false;
 				}
 			}
-			
+
 			this.mouseDown = false;
 			let coords = this.screenToTileCoords(ev.clientX, ev.clientY);
 			this.sock.send('click', coords);
@@ -93,29 +97,29 @@ class GameCanvas {
 	}
 
 	// initilize the canvas with a blank board
-	init () {
-		
+	init() {
+
 		// Field
 		let singleTileWidth = (this.canvas.width - 40) / this.numXTiles;
 		let singleTileHeight = (this.canvas.height - 124) / this.numYTiles;
-	
+
 		if (singleTileWidth < singleTileHeight) this.tileSize = singleTileWidth;
 		else this.tileSize = singleTileHeight;
-		
+
 		let gamePanelWidth = this.tileSize * this.numXTiles;
 		let gamePanelHeight = this.tileSize * this.numYTiles;
-	
+
 		this.gamePanelLeft = (this.canvas.width - gamePanelWidth) / 2;
 		this.gamePanelTop = 104;
-		
+
 		this.drawRect(this.gamePanelLeft - 4, this.gamePanelTop - 4, gamePanelWidth + 8, gamePanelHeight + 8, true, true); // draw panel
-		
-		
+
+
 		// Background
 		this.drawRect(0, 0, this.canvas.width, this.canvas.height, false);
 		for (let y = 0; y < this.numYTiles; y++) {
 			for (let x = 0; x < this.numXTiles; x++) {
-				this.drawTile({type: 'U', x: x, y: y});
+				this.drawTile({ type: 'U', x: x, y: y });
 			}
 		}
 
@@ -127,6 +131,9 @@ class GameCanvas {
 	render() {
 		if (this.clickingTile && this.mouseDown) {
 			this.drawTile(this.clickingTile);
+		}
+		if (this.lastClickingTile) {
+			this.drawTile(this.getTile(this.lastClickingTile.x, this.lastClickingTile.y));
 		}
 	}
 	getTile(x, y) {
