@@ -7,11 +7,11 @@ function getUsers() {
 	return [...expressWs.getWss().clients].map(ws => ws.user);
 }
 function getSockets() {
-	return [...expressWs.getWss().clients];
+	return [...expressWs.getWss().clients].filter(ws => ws.readyState == ws.OPEN);
 }
 function broadcast(sender, action, data) {
 	data.action = action;
-	[...expressWs.getWss().clients].forEach(ws => ws.send(JSON.stringify(data)));
+	getSockets().forEach(ws => ws.send(JSON.stringify(data)));
 }
 function intersectRect(r1, r2) {
 	if (!r2) return true;
@@ -59,6 +59,11 @@ router.ws('/', function (ws, req) {
 	}
 	ws.user = { name: '', ready: false, firstClick: true, alive: true };
 	broadcast(ws, 'lobby', { count: getUsers().length, ready: getUsers().filter(u => u.ready).length });
+	ws.on('close', () => {
+		ws.user.alive = false;
+		let alive = getUsers().filter(u => u.alive).length;
+		broadcast(null, 'leaderboard', { count: alive });
+	});
 	ws.on('message', function (data) {
 		//console.log(getUsers());
 		let msg;
@@ -93,7 +98,7 @@ router.ws('/', function (ws, req) {
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(1000);
+					field.populate(3000);
 					field.print();
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
@@ -112,10 +117,10 @@ router.ws('/', function (ws, req) {
 					let surr = field.getSurrounding(x, y);
 					for (let i = 0; i < surr.length; i++) {
 						let tile = field.field[surr[i].y][surr[i].x];
+						console.log(tile.number);
 						if (tile.number === -1) field.field[y][x].number++;
 						else if (tile.number > 0) tile.number--;
 					}
-					field.field[y][x].number = 0
 				} else if (field.field[y][x].number === -1) {
 					// Die
 					ws.user.alive = false;
@@ -154,8 +159,10 @@ router.ws('/', function (ws, req) {
 				}
 				ws.user.view.w = x2 - ws.user.view.x;
 				ws.user.view.h = y2 - ws.user.view.y;
-				if (ws.user.view.x != old.x || ws.user.view.y != old.y || ws.user.view.w != old.w || ws.user.view.h != old.h)
+				if (ws.user.view.x != old.x || ws.user.view.y != old.y || ws.user.view.w != old.w || ws.user.view.h != old.h) {
 					send('resize', { x: ws.user.view.x - old.x, y: ws.user.view.y - old.y, w: ws.user.view.w, h: ws.user.view.h });
+					send('reveal', { tiles: [].concat.apply([], field.field).filter(t => t.cleared && pointInRect(t, ws.user.view)).map(t => t.serialize(ws.user.view)) });
+				}
 				for (let sock of getSockets()) {
 					let theseUpdates = [];
 					for (let tile of updates) {
