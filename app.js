@@ -8,7 +8,6 @@ const app = express();
 expressWs = require('express-ws')(app);
 
 var socketRouter = require('./routes/socket');
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -18,9 +17,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+var hostname = "localhost";
+process.argv.forEach(function (val, index, array) {
+	switch (val) {
+		case "--hostname":
+			let data = process.argv[index+1];
+			if (data) hostname = data;
+		break;
+	}
+});
+
 app.use('/socket', socketRouter);
 app.get('/js/scripts.js', function (req, res, next) {
-	return res.render('scripts', { socket: 'ws://10.0.0.122:3000/socket' });
+	return res.render('scripts', { socket: 'ws://' +  hostname + ':3000/socket' });
 });
 
 app.use(function (req, res, next) {
@@ -39,4 +48,4 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(3000);
-console.log("Started on http://localhost:3000");
+console.log("Started on http://" + hostname + ":3000");
