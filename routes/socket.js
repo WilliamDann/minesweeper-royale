@@ -152,7 +152,6 @@ router.ws('/', function (ws, req) {
 						us[i].view = newR;
 					}
 					field.populate(bombs);
-					field.print();
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
 				break;
@@ -163,7 +162,6 @@ router.ws('/', function (ws, req) {
 				if (!ws.user.alive || msg.x < 0 || msg.y < 0 || msg.x > ws.user.view.w || msg.y > ws.user.view.h || field.field[y][x].selected) {
 					return;
 				}
-				console.log(msg.x, msg.y, ws.user.view);
 
 				// Ensure that the first tile clicked is not a bomb
 				if (ws.user.firstClick && field.field[y][x].number === -1) {

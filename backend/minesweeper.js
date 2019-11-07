@@ -123,12 +123,13 @@ class Minefield {
 	 */
 	click(x, y, color) {
 		var that = this;
+		if (that.field[y][x].color != "fff") return [];
 
 		// flood fill recursion for auto-clearing zeros
 		function recurse(x, y) {
-				arr.push(that.field[y][x]);
-				that.field[y][x].cleared = true;
-				that.field[y][x].color = color;
+			arr.push(that.field[y][x]);
+			that.field[y][x].cleared = true;
+			that.field[y][x].color = color;
 			if (that.field[y][x].number == 0) {
 				var points = that.getSurrounding(x, y);
 				for (let point of points) {
