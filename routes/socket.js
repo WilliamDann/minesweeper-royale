@@ -1,4 +1,3 @@
-
 var express = require('express');
 var router = express.Router();
 var minesweeper = require('../backend/minesweeper');
@@ -82,6 +81,23 @@ function randomHue() {
 	return `${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
+// determine game parameters
+var bombs = 0;
+var minPlayers = 2;
+process.argv.forEach(function (val, index, array) {
+	switch (val) {
+		case "--bombs":
+			var data = process.argv[index+1];
+			if (data) bombs = parseInt(data);
+		break;
+
+		case "--minPlayers":
+			var data = process.argv[index+1];
+			if (data) minPlayers = parseInt(data);
+		break;	}
+});
+
+
 
 var field;
 router.ws('/', function (ws, req) {
@@ -124,7 +140,7 @@ router.ws('/', function (ws, req) {
 				broadcast(null, 'lobby', { count: c, ready: r });
 
 				// If all users are ready, start the game
-				if (r == c && c > 1) {
+				if (r == c && c >= minPlayers) {
 					field = new minesweeper.Minefield(40 * c, 40 * c);
 					let rects = [];
 					for (let i = 0; i < c; i++) {
@@ -132,11 +148,10 @@ router.ws('/', function (ws, req) {
 						while (newR == undefined || rects.some(r2 => intersectRect(r2, newR))) {
 							newR = { x: Math.floor(Math.random() * (40 * c - 20)), y: Math.floor(Math.random() * (40 * c - 10)), w: 20, h: 10 };
 						}
-						console.log(newR);
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(3000);
+					field.populate(bombs);
 					field.print();
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
