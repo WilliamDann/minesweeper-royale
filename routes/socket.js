@@ -81,12 +81,15 @@ function randomHue() {
 	};
 	return `${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
+
+
 var field;
 router.ws('/', function (ws, req) {
 	let send = (action, data) => {
 		data.action = action;
 		ws.send(JSON.stringify(data));
 	}
+
 	ws.user = { name: '', ready: false, firstClick: true, alive: true };
 	broadcast(ws, 'lobby', { count: getUsers().length, ready: getUsers().filter(u => u.ready).length });
 	ws.on('close', () => {
@@ -94,6 +97,7 @@ router.ws('/', function (ws, req) {
 		let alive = getUsers().filter(u => u.alive).length;
 		broadcast(null, 'leaderboard', { count: alive });
 	});
+
 	ws.on('message', function (data) {
 		let msg;
 		try {
@@ -108,13 +112,18 @@ router.ws('/', function (ws, req) {
 				if (field) return send('nametaken', { message: 'Game In Progress' });
 				if (!msg.name) return send('nametaken', { message: 'Invalid Username' });
 				if (getUsers().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
+
 				ws.user.name = msg.name;
 				ws.user.ready = true;
 				ws.user.color = randomHue();
+
 				let us = getUsers();
 				let r = us.filter(u => u.ready).length;
 				let c = us.length;
+
 				broadcast(null, 'lobby', { count: c, ready: r });
+
+				// If all users are ready, start the game
 				if (r == c && c > 1) {
 					field = new minesweeper.Minefield(40 * c, 40 * c);
 					let rects = [];
@@ -141,17 +150,20 @@ router.ws('/', function (ws, req) {
 				}
 				console.log(msg.x, msg.y, ws.user.view);
 
+				// Ensure that the first tile clicked is not a bomb
 				if (ws.user.firstClick && field.field[y][x].number === -1) {
 					field.field[y][x].number = 0;
 					let surr = field.getSurrounding(x, y);
+
+					// TODO, let tile of surr sould be simpler
 					for (let i = 0; i < surr.length; i++) {
 						let tile = field.field[surr[i].y][surr[i].x];
-						console.log(tile.number);
+						
 						if (tile.number === -1) field.field[y][x].number++;
 						else if (tile.number > 0) tile.number--;
 					}
 				} else if (field.field[y][x].number === -1) {
-					// Die
+					// Die if a bomb is clicked
 					ws.user.alive = false;
 					let theseUpdates = [];
 					for (let y = ws.user.view.y; y < ws.user.view.y + ws.user.view.h; y++) {
@@ -175,6 +187,8 @@ router.ws('/', function (ws, req) {
 					}
 					return;
 				}
+
+				// handle a click on a valid tile
 				ws.user.firstClick = false;
 				let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y, ws.user.color);
 				let old = JSON.parse(JSON.stringify(ws.user.view));
