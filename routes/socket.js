@@ -3,16 +3,36 @@ var express = require('express');
 var router = express.Router();
 var minesweeper = require('../backend/minesweeper');
 
+/**
+ * Gets all connected clients
+ *
+ */
 function getUsers() {
 	return [...expressWs.getWss().clients].map(ws => ws.user);
 }
+
+/**
+ * Get all active sockets
+ */
 function getSockets() {
 	return [...expressWs.getWss().clients].filter(ws => ws.readyState == ws.OPEN);
 }
+
+/**
+ * Broadcast a message
+ * @param {string} action The action to send under
+ * @param {Object} data The data to send
+ */
 function broadcast(sender, action, data) {
 	data.action = action;
 	getSockets().forEach(ws => ws.send(JSON.stringify(data)));
 }
+
+/**
+ * Determine if two rectangles intersect
+ * @param {Object} r1 Object containing an x, y, w, and h for rectangle one
+ * @param {Object} r2 Object containing an x, y, w, and h for rectangle two
+ */
 function intersectRect(r1, r2) {
 	if (!r2) return true;
 	return !(r2.x > r1.x + r1.w ||
@@ -20,9 +40,19 @@ function intersectRect(r1, r2) {
 		r2.y > r1.y + r1.h ||
 		r2.y + r1.h < r1.y);
 }
+
+/**
+ * Determine if a point is inside a rectangle
+ * @param {Object} point x and y information for a point
+ * @param {Object} rect w, y, w, and h infromation for a rectangle
+ */
 function pointInRect(point, rect) {
 	return rect.x <= point.x && point.x < rect.x + rect.w && rect.y <= point.y && point.y < rect.y + rect.h;
 }
+
+/**
+ * Get a random color
+ */
 function randomHue() {
 	h = Math.random();
 	s = Math.random() * 0.2 + 0.4;
@@ -65,7 +95,6 @@ router.ws('/', function (ws, req) {
 		broadcast(null, 'leaderboard', { count: alive });
 	});
 	ws.on('message', function (data) {
-		//console.log(getUsers());
 		let msg;
 		try {
 			msg = JSON.parse(data);

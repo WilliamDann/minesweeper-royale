@@ -17,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Determine where the server should run
 var hostname = "localhost";
 process.argv.forEach(function (val, index, array) {
 	switch (val) {

@@ -5,7 +5,16 @@ function randInt(min, max) {
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// Class to store tile information 
 class Tile {
+	/**
+	 * Class to store tile information
+	 * @param {Number} number The number of bombs surrounding a tile
+	 * @param {String} color The color of the tile when click
+	 * @param {Boolean} cleared If the tile has been clicked
+	 * @param {Number} x The x position of the tile
+	 * @param {Number} y The y position of the tile
+	 */
 	constructor(number, color = "#fff", cleared = false, x, y) {
 		this.number = number;
 		this.color = color;
@@ -14,26 +23,43 @@ class Tile {
 		this.y = y;
 	}
 
+	/**
+	 * Serialize tile for sending to the server
+	 * @param {Object} view Object containing view information
+	 */
 	serialize(view) {
 		return [this.number, this.cleared, this.color, this.x - view.x, this.y - view.y];
 	}
-
-
 } module.exports.Tile = Tile;
 
+/**
+ * Class to store information about the minefield
+ */
 class Minefield {
+	/**
+	 * Class to store information about the minefield
+	 * @param {Number} width The width of the minefield
+	 * @param {Number} height The height of the minefield
+	 */
 	constructor(width, height) {
 		this.width = width;
 		this.height = height;
 
 		this.field = null;
 	}
-	// debug print
+	
+	/**
+	 * Print a representation of the minefield to the console for debugging
+	 */
 	print() {
 		console.log(this.field.map(row => row.map(t => t.number).join('\t')).join('\n'))
 	}
 
-	// get points touching another point
+	/**
+	 * Get all points surrounding a point
+	 * @param {Number} x point x position
+	 * @param {Number} y point y position
+	 */
 	getSurrounding(x, y) {
 		let points = [
 			{ x: x + 1, y: y },
@@ -56,7 +82,10 @@ class Minefield {
 		return fin;
 	}
 
-	// Populate the board with bombs and numbers
+	/**
+	 * Populate the minefield with bombs
+	 * @param {Number} bombs The number of bombs to place
+	 */
 	populate(bombs) {
 		this.field = []
 
@@ -86,9 +115,16 @@ class Minefield {
 		return this.field;
 	}
 
-	// handle a click
+	/**
+	 * Clear the area where a user clicks
+	 * @param {Number} x Click x position
+	 * @param {Number} y Click y position
+	 * @param {String} color Clicking player's color
+	 */
 	click(x, y, color) {
 		var that = this;
+
+		// flood fill recursion for auto-clearing zeros
 		function recurse(x, y) {
 				arr.push(that.field[y][x]);
 				that.field[y][x].cleared = true;
@@ -102,6 +138,7 @@ class Minefield {
 				}
 			}
 		}
+		
 		var arr = []
 		recurse(x, y);
 		return arr;
