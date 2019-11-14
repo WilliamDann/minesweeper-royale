@@ -123,7 +123,7 @@ class Minefield {
 	 */
 	click(x, y, color) {
 		var that = this;
-		if (that.field[y][x].color != "fff") return [];
+		if (that.field[y][x].cleared == true) return [];
 
 		// flood fill recursion for auto-clearing zeros
 		function recurse(x, y) {

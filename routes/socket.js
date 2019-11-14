@@ -46,6 +46,7 @@ function intersectRect(r1, r2) {
  * @param {Object} rect w, y, w, and h infromation for a rectangle
  */
 function pointInRect(point, rect) {
+	if (!point || !rect) return false;
 	return rect.x <= point.x && point.x < rect.x + rect.w && rect.y <= point.y && point.y < rect.y + rect.h;
 }
 
@@ -151,7 +152,7 @@ router.ws('/', function (ws, req) {
 						rects.push(newR);
 						us[i].view = newR;
 					}
-					field.populate(bombs);
+					field.populate(bombs * c);
 					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
 				break;
