@@ -107,8 +107,6 @@ router.ws('/', function (ws, req) {
 	ws.on('message', data => {
 		const msg = parseData(data);
 
-		console.log(data);
-		console.log(msg);
 		if (!msg || !msg.action) 
 			return console.error('No action: ', data); // todo send error code rather than print error
 
@@ -123,7 +121,7 @@ router.ws('/', function (ws, req) {
 					createUser(ws, msg.name, true, util.randomColor());
 					broadcastReadyPlayers();
 					
-				if (playerMinReached && allPlayersReady) {
+				if (playerMinReached() && allPlayersReady()) {
 					const connectedClients = getConnectedClients();
 					const c                = connectedClients.length;
 
