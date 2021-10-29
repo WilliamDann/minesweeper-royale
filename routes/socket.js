@@ -2,29 +2,19 @@ var express = require('express');
 var router = express.Router();
 var minesweeper = require('../backend/minesweeper');
 
-/**
- * Gets all connected clients
- *
- */
-function getUsers() {
+const util = require('../src/util');
+
+function getConnectedClients() {
 	return [...expressWs.getWss().clients].map(ws => ws.user);
 }
 
-/**
- * Get all active sockets
- */
-function getSockets() {
+function getActiveSockets() {
 	return [...expressWs.getWss().clients].filter(ws => ws.readyState == ws.OPEN);
 }
 
-/**
- * Broadcast a message
- * @param {string} action The action to send under
- * @param {Object} data The data to send
- */
 function broadcast(sender, action, data) {
 	data.action = action;
-	getSockets().forEach(ws => ws.send(JSON.stringify(data)));
+	getActiveSockets().forEach(ws => ws.send(JSON.stringify(data)));
 }
 
 /**
@@ -40,47 +30,11 @@ function intersectRect(r1, r2) {
 		r2.y + r1.h < r1.y);
 }
 
-/**
- * Determine if a point is inside a rectangle
- * @param {Object} point x and y information for a point
- * @param {Object} rect w, y, w, and h infromation for a rectangle
- */
 function pointInRect(point, rect) {
 	if (!point || !rect) return false;
 	return rect.x <= point.x && point.x < rect.x + rect.w && rect.y <= point.y && point.y < rect.y + rect.h;
 }
 
-/**
- * Get a random color
- */
-function randomHue() {
-	h = Math.random();
-	s = Math.random() * 0.2 + 0.4;
-	l = Math.random() * 0.2 + 0.4;
-	let r, g, b;
-	if (s === 0) {
-		r = g = b = l; // achromatic
-	} else {
-		const hue2rgb = (p, q, t) => {
-			if (t < 0) t += 1;
-			if (t > 1) t -= 1;
-			if (t < 1 / 6) return p + (q - p) * 6 * t;
-			if (t < 1 / 2) return q;
-			if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-			return p;
-		};
-		const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-		const p = 2 * l - q;
-		r = hue2rgb(p, q, h + 1 / 3);
-		g = hue2rgb(p, q, h);
-		b = hue2rgb(p, q, h - 1 / 3);
-	}
-	const toHex = x => {
-		const hex = Math.round(x * 255).toString(16);
-		return hex.length === 1 ? '0' + hex : hex;
-	};
-	return `${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
 
 // determine game parameters
 var bombs = 0;
@@ -108,10 +62,10 @@ router.ws('/', function (ws, req) {
 	}
 
 	ws.user = { name: '', ready: false, firstClick: true, alive: true };
-	broadcast(ws, 'lobby', { count: getUsers().length, ready: getUsers().filter(u => u.ready).length });
+	broadcast(ws, 'lobby', { count: getConnectedClients().length, ready: getConnectedClients().filter(u => u.ready).length });
 	ws.on('close', () => {
 		ws.user.alive = false;
-		let alive = getUsers().filter(u => u.alive).length;
+		let alive = getConnectedClients().filter(u => u.alive).length;
 		broadcast(null, 'leaderboard', { count: alive });
 	});
 
@@ -128,13 +82,13 @@ router.ws('/', function (ws, req) {
 			case "ready":
 				if (field) return send('nametaken', { message: 'Game In Progress' });
 				if (!msg.name) return send('nametaken', { message: 'Invalid Username' });
-				if (getUsers().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
+				if (getConnectedClients().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
 
 				ws.user.name = msg.name;
 				ws.user.ready = true;
-				ws.user.color = randomHue();
+				ws.user.color = util.randomColor();
 
-				let us = getUsers();
+				let us = getConnectedClients();
 				let r = us.filter(u => u.ready).length;
 				let c = us.length;
 
@@ -153,7 +107,7 @@ router.ws('/', function (ws, req) {
 						us[i].view = newR;
 					}
 					field.populate(bombs * c);
-					getSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
+					getActiveSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
 				break;
 			case "click":
@@ -188,16 +142,16 @@ router.ws('/', function (ws, req) {
 						}
 					}
 					ws.send(JSON.stringify({ action: 'die', tiles: theseUpdates.map(t => t.serialize(ws.user.view)) }));
-					let alive = getUsers().filter(u => u.alive).length;
+					let alive = getConnectedClients().filter(u => u.alive).length;
 					broadcast(null, 'leaderboard', { count: alive });
 					if (alive === 0) {
 						broadcast(null, 'gameover', {
-							leaderboard: getUsers().map(user => {
+							leaderboard: getConnectedClients().map(user => {
 								return { name: user.name, color: user.color, score: [].concat.apply([], field.field).filter(t => t.color === user.color).length };
 							}).sort((a, b) => a - b)
 						});
 						field = null;
-						getSockets().forEach(s => s.close());
+						getActiveSockets().forEach(s => s.close());
 					}
 					return;
 				}
@@ -220,7 +174,7 @@ router.ws('/', function (ws, req) {
 					send('resize', { x: ws.user.view.x - old.x, y: ws.user.view.y - old.y, w: ws.user.view.w, h: ws.user.view.h });
 					send('reveal', { tiles: [].concat.apply([], field.field).filter(t => t.cleared && pointInRect(t, ws.user.view)).map(t => t.serialize(ws.user.view)) });
 				}
-				for (let sock of getSockets()) {
+				for (let sock of getActiveSockets()) {
 					let theseUpdates = [];
 					for (let tile of updates) {
 						if (pointInRect(tile, sock.user.view)) {

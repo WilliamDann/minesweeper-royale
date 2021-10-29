@@ -1,5 +1,5 @@
 var assert = require('assert');
-var mine = require('../minesweeper');
+var mine = require('../backend/minesweeper');
 
 describe('Tile', () => {
     it('should create a new Tile object', (done) => {
