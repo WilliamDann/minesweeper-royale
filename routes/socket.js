@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var minesweeper = require('../backend/minesweeper');
+const express     = require('express');
+const router      = express.Router();
+const minesweeper = require('../src/minesweeper');
 
 const util = require('../src/util');
 
@@ -17,26 +17,8 @@ function broadcast(sender, action, data) {
 	getActiveSockets().forEach(ws => ws.send(JSON.stringify(data)));
 }
 
-/**
- * Determine if two rectangles intersect
- * @param {Object} r1 Object containing an x, y, w, and h for rectangle one
- * @param {Object} r2 Object containing an x, y, w, and h for rectangle two
- */
-function intersectRect(r1, r2) {
-	if (!r2) return true;
-	return !(r2.x > r1.x + r1.w ||
-		r2.x + r1.w < r1.x ||
-		r2.y > r1.y + r1.h ||
-		r2.y + r1.h < r1.y);
-}
-
-function pointInRect(point, rect) {
-	if (!point || !rect) return false;
-	return rect.x <= point.x && point.x < rect.x + rect.w && rect.y <= point.y && point.y < rect.y + rect.h;
-}
-
-
 // determine game parameters
+// TODO needs to be moved
 var bombs = 0;
 var minPlayers = 2;
 process.argv.forEach(function (val, index, array) {
@@ -53,59 +35,111 @@ process.argv.forEach(function (val, index, array) {
 });
 
 
+function addConnection(connection) {
+	connection.user = {
+		name: '',
+		ready: false,
+		firstClick: true,
+		alive: true
+	};
+	
+	broadcastReadyPlayers(connection);	
+}
 
-var field;
+function removeConnection(connection)
+{
+	connection.user.alive = false;
+
+	broadcast(
+		null,
+		'leaderboard',
+		{ count: getConnectedClients().filter(x => x.alive).length }
+	);
+}
+
+function parseData(data)
+{
+	try 
+	{
+		return JSON.parse(data)
+	} catch (e)
+	{
+		return undefined;
+	}
+}
+
+function createUser(connection, name, ready, color)
+{
+	connection.user.name  = name;
+	connection.user.ready = ready;
+	connection.user.color = color;
+}
+
+function broadcastReadyPlayers(broadcaster=null)
+{
+	const all = getConnectedClients();
+
+	broadcast(broadcaster, 'lobby', { count: all.length, ready: all.filter(x => x.ready).length });
+}
+
+function playerMinReached()
+{
+	return getConnectedClients().length >= minPlayers;
+}
+
+function allPlayersReady()
+{
+	const clients = getConnectedClients();
+	return clients.length == clients.filter(x => x.ready).length;
+}
+
+let field;
 router.ws('/', function (ws, req) {
-	let send = (action, data) => {
+	const send = (action, data) => {
 		data.action = action;
 		ws.send(JSON.stringify(data));
 	}
 
-	ws.user = { name: '', ready: false, firstClick: true, alive: true };
-	broadcast(ws, 'lobby', { count: getConnectedClients().length, ready: getConnectedClients().filter(u => u.ready).length });
-	ws.on('close', () => {
-		ws.user.alive = false;
-		let alive = getConnectedClients().filter(u => u.alive).length;
-		broadcast(null, 'leaderboard', { count: alive });
-	});
+	addConnection(ws);
 
-	ws.on('message', function (data) {
-		let msg;
-		try {
-			msg = JSON.parse(data);
-		} catch (e) {
-			return console.error(data);
-		}
-		if (!msg.action) return console.error('No action: ', data);
+	ws.on('close', () => removeConnection(ws))
+
+	ws.on('message', data => {
+		const msg = parseData(data);
+
+		console.log(data);
+		console.log(msg);
+		if (!msg || !msg.action) 
+			return console.error('No action: ', data); // todo send error code rather than print error
 
 		switch (msg.action) {
 			case "ready":
-				if (field) return send('nametaken', { message: 'Game In Progress' });
+				if (field)     return send('nametaken', { message: 'Game In Progress' }); // TODO nametaken should be renamed to name_error
 				if (!msg.name) return send('nametaken', { message: 'Invalid Username' });
-				if (getConnectedClients().find(user => user.name === msg.name)) return send('nametaken', { message: 'Username Taken' });
 
-				ws.user.name = msg.name;
-				ws.user.ready = true;
-				ws.user.color = util.randomColor();
+				if (getConnectedClients().find(user => user.name === msg.name))
+					return send('nametaken', { message: 'Username Taken' });
 
-				let us = getConnectedClients();
-				let r = us.filter(u => u.ready).length;
-				let c = us.length;
+					createUser(ws, msg.name, true, util.randomColor());
+					broadcastReadyPlayers();
+					
+				if (playerMinReached && allPlayersReady) {
+					const connectedClients = getConnectedClients();
+					const c                = connectedClients.length;
 
-				broadcast(null, 'lobby', { count: c, ready: r });
-
-				// If all users are ready, start the game
-				if (r == c && c >= minPlayers) {
+					// todo make function
 					field = new minesweeper.Minefield(40 * c, 40 * c);
 					let rects = [];
 					for (let i = 0; i < c; i++) {
 						let newR;
-						while (newR == undefined || rects.some(r2 => intersectRect(r2, newR))) {
+						while (newR == undefined || rects.some(r2 => util.intersectRect(r2, newR))) {
 							newR = { x: Math.floor(Math.random() * (40 * c - 20)), y: Math.floor(Math.random() * (40 * c - 10)), w: 20, h: 10 };
 						}
 						rects.push(newR);
-						us[i].view = newR;
+						connectedClients[i].view = newR;
 					}
+					//
+
 					field.populate(bombs * c);
 					getActiveSockets().forEach(ws2 => ws2.send(JSON.stringify({ action: 'start', width: 20, height: 10, color: ws2.user.color, count: c })));
 				}
@@ -172,12 +206,12 @@ router.ws('/', function (ws, req) {
 				ws.user.view.h = y2 - ws.user.view.y;
 				if (ws.user.view.x != old.x || ws.user.view.y != old.y || ws.user.view.w != old.w || ws.user.view.h != old.h) {
 					send('resize', { x: ws.user.view.x - old.x, y: ws.user.view.y - old.y, w: ws.user.view.w, h: ws.user.view.h });
-					send('reveal', { tiles: [].concat.apply([], field.field).filter(t => t.cleared && pointInRect(t, ws.user.view)).map(t => t.serialize(ws.user.view)) });
+					send('reveal', { tiles: [].concat.apply([], field.field).filter(t => t.cleared && util.pointInRect(t, ws.user.view)).map(t => t.serialize(ws.user.view)) });
 				}
 				for (let sock of getActiveSockets()) {
 					let theseUpdates = [];
 					for (let tile of updates) {
-						if (pointInRect(tile, sock.user.view)) {
+						if (util.pointInRect(tile, sock.user.view)) {
 							theseUpdates.push(tile);
 						}
 					}
