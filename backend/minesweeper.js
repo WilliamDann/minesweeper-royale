@@ -123,24 +123,27 @@ class Minefield {
 	 */
 	click(x, y, color) {
 		var that = this;
-		if (that.field[y][x].cleared == true) return [];
 
 		// flood fill recursion for auto-clearing zeros
 		function recurse(x, y) {
+			// if we've already been here before, quit
+			if (that.field[y][x].cleared)
+				return;
+
+			// add to list of mutations and set tile to clicked
 			arr.push(that.field[y][x]);
 			that.field[y][x].cleared = true;
-			that.field[y][x].color = color;
-			if (that.field[y][x].number == 0) {
-				var points = that.getSurrounding(x, y);
-				for (let point of points) {
-					if (!that.field[point.y][point.x].cleared) {
-						recurse(point.x, point.y);
-					}
-				}
-			}
+			that.field[y][x].color = color;	
+
+			// if it's not a 0, quit
+			if (that.field[y][x].number != 0 )
+				return;
+
+			// recurse around
+			that.getSurrounding(x, y).map(point => recurse(point.x, point.y));
 		}
 		
-		var arr = []
+		var arr = [ ]
 		recurse(x, y);
 		return arr;
 	}

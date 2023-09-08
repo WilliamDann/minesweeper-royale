@@ -83,7 +83,7 @@ function randomHue() {
 }
 
 // determine game parameters
-var bombs = 0;
+var bombs = 500;
 var minPlayers = 2;
 process.argv.forEach(function (val, index, array) {
 	switch (val) {
@@ -205,6 +205,7 @@ router.ws('/', function (ws, req) {
 				// handle a click on a valid tile
 				ws.user.firstClick = false;
 				let updates = field.click(msg.x + ws.user.view.x, msg.y + ws.user.view.y, ws.user.color);
+				console.log(updates);
 				let old = JSON.parse(JSON.stringify(ws.user.view));
 				let x2 = ws.user.view.x + ws.user.view.w;
 				let y2 = ws.user.view.y + ws.user.view.h;
